@@ -41,23 +41,29 @@ public final class FareComputation {
     }
 
     public Fare totalFare() {
+        EvalVisitor e = new EvalVisitor();
+        totalFareTree().accept(e);
+        return e.getFare();
+    }
+
+    FareTree totalFareTree() {
         FareTree fareTree;
         Party party;
         if (situation.is_片道()) {
             party = situation
                     .getParty(Situation.Direction._ゆき)
                     .orElseThrow(AssertionError::new);
-            fareTree = computeFare(party);
+            fareTree = treeOf(party);
         } else if (situation.is_往復()) {
             party = situation
                     .getParty(Situation.Direction._ゆき)
                     .orElseThrow(AssertionError::new);
-            FareTree ft1 = computeFare(party);
+            FareTree ft1 = treeOf(party);
 
             party = situation
                     .getParty(Situation.Direction._かえり)
                     .orElseThrow(AssertionError::new);
-            FareTree ft2 = computeFare(party);
+            FareTree ft2 = treeOf(party);
 
             fareTree =
                     new FareTree.PlusNode(ft1, ft2);
@@ -65,12 +71,10 @@ public final class FareComputation {
             throw new AssertionError();
         }
 
-        EvalVisitor e = new EvalVisitor();
-        fareTree.accept(e);
-        return e.getFare();
+        return fareTree;
     }
 
-    private FareTree computeFare(Party party) {
+    FareTree treeOf(Party party) {
         BasicFare basicFare =
                 repositories.basicFareRepository
                         .getBetween(party.getDeparture(), party.getDestination())
