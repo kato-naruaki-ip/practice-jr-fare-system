@@ -4,18 +4,18 @@ import domain.jr.externalsystems.distance.StationDistance;
 import domain.jr.externalsystems.distance.StationDistanceRepository;
 import domain.jr.faresystem.model.basicfare.BasicFare;
 import domain.jr.faresystem.model.basicfare.BasicFareRepository;
-import domain.jr.faresystem.model.client.Client;
 import domain.jr.faresystem.model.fare.Fare;
 import domain.jr.faresystem.model.situation.Party;
 import domain.jr.faresystem.model.situation.Situation;
 import domain.jr.faresystem.model.surcharge.superexpress.SuperExpressSurcharge;
 import domain.jr.faresystem.model.surcharge.superexpress.SuperExpressSurchargeRepository;
-import domain.jr.faresystem.service.discount.ChildDiscount;
 import domain.jr.faresystem.service.discount.FreeSeatDiscount;
 import domain.jr.faresystem.service.discount.GroupDiscount;
 import domain.jr.faresystem.service.discount.RoundTripDiscount;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
+
+import java.util.stream.Collectors;
 
 public final class FareComputation {
     private final FareComputationRepositories repositories;
@@ -41,85 +41,99 @@ public final class FareComputation {
     }
 
     public Fare totalFare() {
-        Fare result = Fare.from(0);
-
+        FareTree fareTree;
         Party party;
         if (situation.is_片道()) {
             party = situation
                     .getParty(Situation.Direction._ゆき)
                     .orElseThrow(AssertionError::new);
-            result = result._plus_(computeFare(party));
+            fareTree = computeFare(party);
         } else if (situation.is_往復()) {
             party = situation
                     .getParty(Situation.Direction._ゆき)
                     .orElseThrow(AssertionError::new);
-            result = result._plus_(computeFare(party));
+            FareTree ft1 = computeFare(party);
 
             party = situation
                     .getParty(Situation.Direction._かえり)
                     .orElseThrow(AssertionError::new);
-            result = result._plus_(computeFare(party));
+            FareTree ft2 = computeFare(party);
+
+            fareTree =
+                    new FareTree.PlusNode(ft1, ft2);
         } else {
             throw new AssertionError();
         }
 
-        return result;
+        EvalVisitor e = new EvalVisitor();
+        fareTree.accept(e);
+        return e.getFare();
     }
 
-    private Fare computeFare(Party party) {
-        Fare basicFare =
+    private FareTree computeFare(Party party) {
+        BasicFare basicFare =
                 repositories.basicFareRepository
                         .getBetween(party.getDeparture(), party.getDestination())
-                        .map(BasicFare::getFare)
                         .orElseThrow(RuntimeException::new);
 
-        Fare superExpressSurchargeFare =
+        FareTree.BasicFareLeaf basicFareLeaf =
+                new FareTree.BasicFareLeaf(basicFare);
+
+        SuperExpressSurcharge superExpressSurcharge =
                 repositories.superExpressSurchargeRepository
                         .getBetween(
                                 party.getSuperExpress(),
                                 party.getDeparture(),
                                 party.getDestination()
                         )
-                        .map(SuperExpressSurcharge::getFare)
                         .orElseThrow(RuntimeException::new);
+
+        FareTree.SuperExpressSurchargeLeaf superExpressSurchargeLeaf =
+                new FareTree.SuperExpressSurchargeLeaf(superExpressSurcharge);
 
         StationDistance distance =
                 repositories.stationDistanceRepository
                         .getBetween(party.getDeparture(), party.getDestination())
                         .orElseThrow(RuntimeException::new);
 
-        basicFare =
-                RoundTripDiscount
-                        .when(distance, situation.is_往復())
-                        .apply(basicFare);
+        FareTree.DiscountNode discountedBasicFare =
+                new FareTree.DiscountNode(
+                        basicFareLeaf,
+                        RoundTripDiscount
+                                .when(distance, situation.is_往復())
+                );
 
-        superExpressSurchargeFare =
-                FreeSeatDiscount
-                        .when(party.isFreeSeat())
-                        .apply(superExpressSurchargeFare);
+        FareTree.DiscountNode discountedSuperExpressSurcharge =
+                new FareTree.DiscountNode(
+                        superExpressSurchargeLeaf,
+                        FreeSeatDiscount
+                                .when(party.isFreeSeat())
+                );
 
-        Fare oneClient =
-                basicFare._plus_(superExpressSurchargeFare);
-        Fare oneChild =
-                ChildDiscount
-                        .computeTotalFareForChild(basicFare, superExpressSurchargeFare);
+        FareTree.PlusNode oneClient =
+                new FareTree.PlusNode(discountedBasicFare, discountedSuperExpressSurcharge);
 
-        Fare result = Fare.from(0);
+        FareTree.FareLeaf oneChild =
+                new FareTree.FareLeaf(Fare.from(1230)); // TODO
 
-        for (Client client : party.getClients()) {
-            if (client.isChild()) {
-                result = result._plus_(oneChild);
-            } else {
-                result = result._plus_(oneClient);
-            }
-        }
+        FareTree.SumNode allClients =
+                new FareTree.SumNode(
+                        party.getClients().stream()
+                                .map(client -> client.isChild() ? oneChild : oneClient)
+                                .collect(Collectors.toUnmodifiableList())
+                );
 
-        result =
-                GroupDiscount
-                        .when(party.getClients().size(), party.getDate(), oneClient)
-                        .apply(result);
+        EvalVisitor e = new EvalVisitor();
+        oneClient.accept(e);
+        Fare fareForOneClient = e.getFare();
 
-        return result;
+        FareTree.DiscountNode discountedAllClients =
+                new FareTree.DiscountNode(
+                        allClients,
+                        GroupDiscount
+                                .when(party.getClients().size(), party.getDate(), fareForOneClient)
+                );
+
+        return discountedAllClients;
     }
-
 }

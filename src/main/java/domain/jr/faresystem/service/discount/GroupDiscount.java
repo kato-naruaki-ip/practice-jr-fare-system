@@ -12,7 +12,7 @@ import java.util.Objects;
 
 @Value
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class GroupDiscount {
+public class GroupDiscount implements Discount {
     int groupSize;
     Date date;
     Fare oneClient;

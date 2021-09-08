@@ -7,7 +7,7 @@ import lombok.Value;
 
 @Value
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class FreeSeatDiscount {
+public class FreeSeatDiscount implements Discount {
     boolean isFreeSeat;
 
     public static FreeSeatDiscount when(boolean isFreeSeat) {
