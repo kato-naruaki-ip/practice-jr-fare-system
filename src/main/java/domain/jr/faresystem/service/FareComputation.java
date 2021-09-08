@@ -45,13 +45,19 @@ public final class FareComputation {
 
         Party party;
         if (situation.is_片道()) {
-            party = situation.getParty(Situation.Direction._ゆき).orElseThrow(AssertionError::new);
+            party = situation
+                    .getParty(Situation.Direction._ゆき)
+                    .orElseThrow(AssertionError::new);
             result = result._plus_(computeFare(party));
         } else if (situation.is_往復()) {
-            party = situation.getParty(Situation.Direction._ゆき).orElseThrow(AssertionError::new);
+            party = situation
+                    .getParty(Situation.Direction._ゆき)
+                    .orElseThrow(AssertionError::new);
             result = result._plus_(computeFare(party));
 
-            party = situation.getParty(Situation.Direction._かえり).orElseThrow(AssertionError::new);
+            party = situation
+                    .getParty(Situation.Direction._かえり)
+                    .orElseThrow(AssertionError::new);
             result = result._plus_(computeFare(party));
         } else {
             throw new AssertionError();
@@ -77,9 +83,10 @@ public final class FareComputation {
                         .map(SuperExpressSurcharge::getFare)
                         .orElseThrow(RuntimeException::new);
 
-        StationDistance distance = repositories.stationDistanceRepository
-                .getBetween(party.getDeparture(), party.getDestination())
-                .orElseThrow(RuntimeException::new);
+        StationDistance distance =
+                repositories.stationDistanceRepository
+                        .getBetween(party.getDeparture(), party.getDestination())
+                        .orElseThrow(RuntimeException::new);
 
         basicFare =
                 RoundTripDiscount
@@ -91,8 +98,11 @@ public final class FareComputation {
                         .when(party.isFreeSeat())
                         .apply(superExpressSurchargeFare);
 
-        Fare oneClient = basicFare._plus_(superExpressSurchargeFare);
-        Fare oneChild = ChildDiscount.computeTotalFareForChild(basicFare, superExpressSurchargeFare);
+        Fare oneClient =
+                basicFare._plus_(superExpressSurchargeFare);
+        Fare oneChild =
+                ChildDiscount
+                        .computeTotalFareForChild(basicFare, superExpressSurchargeFare);
 
         Fare result = Fare.from(0);
 
