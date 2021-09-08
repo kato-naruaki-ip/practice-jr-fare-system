@@ -13,17 +13,24 @@ public abstract class FareTree {
 
     public interface FareTreeVisitor {
         void visitFareLeaf(FareLeaf current);
+
         void visitBasicFareLeaf(BasicFareLeaf current);
+
         void visitSuperExpressSurchargeLeaf(SuperExpressSurchargeLeaf current);
 
         void visitPlusNode(PlusNode current);
+
         void visitSumNode(SumNode current);
+
         void visitDiscountNode(DiscountNode current);
+
+        void visitOneChildNode(OneChildNode current);
     }
 
     @AllArgsConstructor
     public static class FareLeaf extends FareTree {
         final Fare fare;
+
         @Override
         public void accept(FareTreeVisitor visitor) {
             visitor.visitFareLeaf(this);
@@ -33,6 +40,7 @@ public abstract class FareTree {
     @AllArgsConstructor
     public static class BasicFareLeaf extends FareTree {
         final BasicFare basicFare;
+
         @Override
         public void accept(FareTreeVisitor visitor) {
             visitor.visitBasicFareLeaf(this);
@@ -42,6 +50,7 @@ public abstract class FareTree {
     @AllArgsConstructor
     public static class SuperExpressSurchargeLeaf extends FareTree {
         final SuperExpressSurcharge superExpressSurcharge;
+
         @Override
         public void accept(FareTreeVisitor visitor) {
             visitor.visitSuperExpressSurchargeLeaf(this);
@@ -52,6 +61,7 @@ public abstract class FareTree {
     public static class PlusNode extends FareTree {
         final FareTree ft1;
         final FareTree ft2;
+
         @Override
         public void accept(FareTreeVisitor visitor) {
             visitor.visitPlusNode(this);
@@ -61,6 +71,7 @@ public abstract class FareTree {
     @AllArgsConstructor
     public static class SumNode extends FareTree {
         final List<FareTree> fts;
+
         @Override
         public void accept(FareTreeVisitor visitor) {
             visitor.visitSumNode(this);
@@ -71,10 +82,21 @@ public abstract class FareTree {
     public static class DiscountNode extends FareTree {
         final FareTree ft;
         final Discount discount;
+
         @Override
         public void accept(FareTreeVisitor visitor) {
             visitor.visitDiscountNode(this);
         }
     }
 
+    @AllArgsConstructor
+    public static class OneChildNode extends FareTree {
+        final FareTree basicFare;
+        final FareTree superExpressSurcharge;
+
+        @Override
+        public void accept(FareTreeVisitor visitor) {
+            visitor.visitOneChildNode(this);
+        }
+    }
 }

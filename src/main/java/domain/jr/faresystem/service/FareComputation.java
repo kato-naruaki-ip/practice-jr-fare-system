@@ -117,8 +117,8 @@ public final class FareComputation {
         FareTree.PlusNode oneClient =
                 new FareTree.PlusNode(discountedBasicFare, discountedSuperExpressSurcharge);
 
-        FareTree.FareLeaf oneChild =
-                new FareTree.FareLeaf(Fare.from(1230)); // TODO
+        FareTree.OneChildNode oneChild =
+                new FareTree.OneChildNode(discountedBasicFare, discountedSuperExpressSurcharge);
 
         FareTree.SumNode allClients =
                 new FareTree.SumNode(

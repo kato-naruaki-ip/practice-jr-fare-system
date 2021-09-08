@@ -1,6 +1,7 @@
 package domain.jr.faresystem.service;
 
 import domain.jr.faresystem.model.fare.Fare;
+import domain.jr.faresystem.service.discount.ChildDiscount;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
@@ -56,5 +57,15 @@ class EvalVisitor implements FareTree.FareTreeVisitor {
         current.ft.accept(this);
 
         acc = current.discount.apply(acc);
+    }
+
+    @Override
+    public void visitOneChildNode(FareTree.OneChildNode current) {
+        current.basicFare.accept(this);
+        var tmp1 = acc;
+        current.superExpressSurcharge.accept(this);
+        var tmp2 = acc;
+
+        acc = ChildDiscount.computeTotalFareForChild(tmp1, tmp2);
     }
 }
