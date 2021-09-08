@@ -43,6 +43,11 @@ public final class FareComputation {
     public Fare totalFare() {
         EvalVisitor e = new EvalVisitor();
         totalFareTree().accept(e);
+
+        DetailVisitor e2 = DetailVisitor.zero();
+        totalFareTree().accept(e2);
+        System.out.println(e2.show());
+
         return e.getFare();
     }
 
