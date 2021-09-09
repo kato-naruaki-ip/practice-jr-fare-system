@@ -21,6 +21,14 @@ class AccountVisitor implements FareTree.FareTreeVisitor {
         return new AccountVisitor(0, List.of());
     }
 
+    public static String convertToString(FareTree fareTree) {
+        AccountVisitor visitor = zero();
+
+        fareTree.accept(visitor);
+
+        return visitor.show();
+    }
+
     public String show() {
         return lines.stream()
                 .map(line -> HEADER_UNIT.repeat(line._1) + line._2)
