@@ -11,14 +11,14 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
-class DetailVisitor implements FareTree.FareTreeVisitor {
+class AccountVisitor implements FareTree.FareTreeVisitor {
     private static final String HEADER_UNIT = "\t";
 
     private int depth;
     private List<Tuple2<Integer, String>> lines;
 
-    public static DetailVisitor zero() {
-        return new DetailVisitor(0, List.of());
+    public static AccountVisitor zero() {
+        return new AccountVisitor(0, List.of());
     }
 
     public String show() {
@@ -44,8 +44,8 @@ class DetailVisitor implements FareTree.FareTreeVisitor {
 
     @Override
     public void visitPlusNode(FareTree.PlusNode node) {
-        DetailVisitor visitor1 = zero();
-        DetailVisitor visitor2 = zero();
+        AccountVisitor visitor1 = zero();
+        AccountVisitor visitor2 = zero();
         visitor1.depth = depth + 1;
         visitor2.depth = depth + 1;
 
@@ -65,7 +65,7 @@ class DetailVisitor implements FareTree.FareTreeVisitor {
         List<List<Tuple2<Integer, String>>> lss = new ArrayList<>();
 
         for (FareTree ft : node.subTrees) {
-            DetailVisitor visitor = zero();
+            AccountVisitor visitor = zero();
             visitor.depth = depth + 1;
 
             ft.accept(visitor);
@@ -74,13 +74,13 @@ class DetailVisitor implements FareTree.FareTreeVisitor {
 
         lines = sum(
                 List.of(Tuple.of(depth, String.format("sum(%d): %s", lss.size(), EvalVisitor.evaluate(node).show()))),
-                lss.stream().reduce(List.of(), DetailVisitor::sum)
+                lss.stream().reduce(List.of(), AccountVisitor::sum)
         );
     }
 
     @Override
     public void visitDiscountNode(FareTree.DiscountNode node) {
-        DetailVisitor visitor = zero();
+        AccountVisitor visitor = zero();
         visitor.depth = depth + 1;
 
         node.subTree.accept(visitor);
@@ -93,8 +93,8 @@ class DetailVisitor implements FareTree.FareTreeVisitor {
 
     @Override
     public void visitOneChildNode(FareTree.OneChildNode node) {
-        DetailVisitor visitor1 = zero();
-        DetailVisitor visitor2 = zero();
+        AccountVisitor visitor1 = zero();
+        AccountVisitor visitor2 = zero();
         visitor1.depth = depth + 1;
         visitor2.depth = depth + 1;
 

@@ -41,7 +41,7 @@ public final class FareComputation {
     }
 
     public Fare totalFare() {
-        DetailVisitor e2 = DetailVisitor.zero();
+        AccountVisitor e2 = AccountVisitor.zero();
         totalFareTree().accept(e2);
         System.out.println(e2.show());
 
