@@ -50,6 +50,7 @@ public final class FareComputation {
 
     FareTree totalFareTree() {
         FareTree fareTree;
+
         Party party;
         if (situation.is_片道()) {
             party = situation
@@ -67,8 +68,7 @@ public final class FareComputation {
                     .orElseThrow(AssertionError::new);
             FareTree ft2 = treeOf(party);
 
-            fareTree =
-                    new FareTree.PlusNode(ft1, ft2);
+            fareTree = new FareTree.PlusNode(ft1, ft2);
         } else {
             throw new AssertionError();
         }
@@ -82,7 +82,7 @@ public final class FareComputation {
                         .getBetween(party.getDeparture(), party.getDestination())
                         .orElseThrow(RuntimeException::new);
 
-        FareTree.BasicFareLeaf basicFareLeaf =
+        FareTree basicFareLeaf =
                 new FareTree.BasicFareLeaf(basicFare);
 
         SuperExpressSurcharge superExpressSurcharge =
@@ -94,7 +94,7 @@ public final class FareComputation {
                         )
                         .orElseThrow(RuntimeException::new);
 
-        FareTree.SuperExpressSurchargeLeaf superExpressSurchargeLeaf =
+        FareTree superExpressSurchargeLeaf =
                 new FareTree.SuperExpressSurchargeLeaf(superExpressSurcharge);
 
         StationDistance distance =
@@ -102,27 +102,27 @@ public final class FareComputation {
                         .getBetween(party.getDeparture(), party.getDestination())
                         .orElseThrow(RuntimeException::new);
 
-        FareTree.DiscountNode discountedBasicFare =
+        FareTree discountedBasicFare =
                 new FareTree.DiscountNode(
                         basicFareLeaf,
                         RoundTripDiscount
                                 .when(distance, situation.is_往復())
                 );
 
-        FareTree.DiscountNode discountedSuperExpressSurcharge =
+        FareTree discountedSuperExpressSurcharge =
                 new FareTree.DiscountNode(
                         superExpressSurchargeLeaf,
                         FreeSeatDiscount
                                 .when(party.isFreeSeat())
                 );
 
-        FareTree.PlusNode oneClient =
+        FareTree oneClient =
                 new FareTree.PlusNode(discountedBasicFare, discountedSuperExpressSurcharge);
 
-        FareTree.OneChildNode oneChild =
+        FareTree oneChild =
                 new FareTree.OneChildNode(discountedBasicFare, discountedSuperExpressSurcharge);
 
-        FareTree.SumNode allClients =
+        FareTree allClients =
                 new FareTree.SumNode(
                         party.getClients().stream()
                                 .map(client -> client.isChild() ? oneChild : oneClient)
@@ -131,7 +131,7 @@ public final class FareComputation {
 
         Fare fareForOneClient = EvalVisitor.evaluate(oneClient);
 
-        FareTree.DiscountNode discountedAllClients =
+        FareTree discountedAllClients =
                 new FareTree.DiscountNode(
                         allClients,
                         GroupDiscount
