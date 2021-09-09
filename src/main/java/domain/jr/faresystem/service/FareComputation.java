@@ -41,14 +41,11 @@ public final class FareComputation {
     }
 
     public Fare totalFare() {
-        EvalVisitor e = new EvalVisitor();
-        totalFareTree().accept(e);
-
         DetailVisitor e2 = DetailVisitor.zero();
         totalFareTree().accept(e2);
         System.out.println(e2.show());
 
-        return e.getFare();
+        return EvalVisitor.evaluate(totalFareTree());
     }
 
     FareTree totalFareTree() {
@@ -132,9 +129,7 @@ public final class FareComputation {
                                 .collect(Collectors.toUnmodifiableList())
                 );
 
-        EvalVisitor e = new EvalVisitor();
-        oneClient.accept(e);
-        Fare fareForOneClient = e.getFare();
+        Fare fareForOneClient = EvalVisitor.evaluate(oneClient);
 
         FareTree.DiscountNode discountedAllClients =
                 new FareTree.DiscountNode(

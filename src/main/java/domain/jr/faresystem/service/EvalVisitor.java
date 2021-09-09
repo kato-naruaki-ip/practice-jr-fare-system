@@ -2,42 +2,56 @@ package domain.jr.faresystem.service;
 
 import domain.jr.faresystem.model.fare.Fare;
 import domain.jr.faresystem.service.discount.ChildDiscount;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 class EvalVisitor implements FareTree.FareTreeVisitor {
-    private Fare acc = Fare.from(0);
+    private Fare fare;
 
-    public EvalVisitor() {
+    public static EvalVisitor zero() {
+        return new EvalVisitor(Fare.from(0));
     }
 
     public Fare getFare() {
-        return acc;
+        return fare;
+    }
+
+    public static Fare evaluate(FareTree fareTree) {
+        EvalVisitor visitor = zero();
+
+        fareTree.accept(visitor);
+
+        return visitor.getFare();
     }
 
     @Override
     public void visitFareLeaf(FareTree.FareLeaf current) {
-        acc = current.fare;
+        fare = current.fare;
     }
 
     @Override
     public void visitBasicFareLeaf(FareTree.BasicFareLeaf current) {
-        acc = current.basicFare.getFare();
+        fare = current.basicFare.getFare();
     }
 
     @Override
     public void visitSuperExpressSurchargeLeaf(FareTree.SuperExpressSurchargeLeaf current) {
-        acc = current.superExpressSurcharge.getFare();
+        fare = current.superExpressSurcharge.getFare();
     }
 
     @Override
     public void visitPlusNode(FareTree.PlusNode current) {
-        current.ft1.accept(this);
-        var tmp1 = acc;
-        current.ft2.accept(this);
-        var tmp2 = acc;
+        EvalVisitor visitor1 = zero();
+        EvalVisitor visitor2 = zero();
 
-        acc = tmp1._plus_(tmp2);
+        current.ft1.accept(visitor1);
+        current.ft1.accept(visitor2);
+
+        Fare fare1 = visitor1.fare;
+        Fare fare2 = visitor2.fare;
+
+        fare = fare1._plus_(fare2);
     }
 
     @Override
@@ -45,27 +59,32 @@ class EvalVisitor implements FareTree.FareTreeVisitor {
         Fare result = Fare.from(0);
 
         for (FareTree ft : current.fts) {
-            ft.accept(this);
-            result = result._plus_(acc);
+            EvalVisitor visitor = zero();
+
+            ft.accept(visitor);
+            result = result._plus_(visitor.fare);
         }
 
-        acc = result;
+        fare = result;
     }
 
     @Override
     public void visitDiscountNode(FareTree.DiscountNode current) {
-        current.ft.accept(this);
+        EvalVisitor visitor = zero();
 
-        acc = current.discount.apply(acc);
+        current.ft.accept(visitor);
+
+        fare = current.discount.apply(visitor.fare);
     }
 
     @Override
     public void visitOneChildNode(FareTree.OneChildNode current) {
-        current.basicFare.accept(this);
-        var tmp1 = acc;
-        current.superExpressSurcharge.accept(this);
-        var tmp2 = acc;
+        EvalVisitor visitorB = zero();
+        EvalVisitor visitorS = zero();
 
-        acc = ChildDiscount.computeTotalFareForChild(tmp1, tmp2);
+        current.basicFare.accept(visitorB);
+        current.superExpressSurcharge.accept(visitorS);
+
+        fare = ChildDiscount.computeTotalFareForChild(visitorB.fare, visitorS.fare);
     }
 }
