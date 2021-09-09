@@ -43,13 +43,13 @@ class DetailVisitor implements FareTree.FareTreeVisitor {
     @Override
     public void visitBasicFareLeaf(FareTree.BasicFareLeaf node) {
         fare = node.basicFare.getFare();
-        lines = List.of(Tuple.of(depth, "BasicFare: " + node.basicFare.toString()));
+        lines = List.of(Tuple.of(depth, "BasicFare: " + node.basicFare.show()));
     }
 
     @Override
     public void visitSuperExpressSurchargeLeaf(FareTree.SuperExpressSurchargeLeaf node) {
         fare = node.superExpressSurcharge.getFare();
-        lines = List.of(Tuple.of(depth, "SuperExpressSurcharge: " + node.superExpressSurcharge.toString()));
+        lines = List.of(Tuple.of(depth, "SuperExpressSurcharge: " + node.superExpressSurcharge.show()));
     }
 
     @Override
