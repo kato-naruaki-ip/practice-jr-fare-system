@@ -17,7 +17,7 @@ class DetailVisitor implements FareTree.FareTreeVisitor {
     private static final String HEADER_UNIT = "\t";
 
     private Fare fare;
-    private int currentDepth;
+    private int depth;
     private List<Tuple2<Integer, String>> lines;
 
     public static DetailVisitor zero() {
@@ -35,32 +35,32 @@ class DetailVisitor implements FareTree.FareTreeVisitor {
     }
 
     @Override
-    public void visitFareLeaf(FareTree.FareLeaf current) {
-        fare = current.fare;
-        lines = List.of(Tuple.of(currentDepth, "fare: " + current.fare.show()));
+    public void visitFareLeaf(FareTree.FareLeaf node) {
+        fare = node.fare;
+        lines = List.of(Tuple.of(depth, "fare: " + node.fare.show()));
     }
 
     @Override
-    public void visitBasicFareLeaf(FareTree.BasicFareLeaf current) {
-        fare = current.basicFare.getFare();
-        lines = List.of(Tuple.of(currentDepth, "BasicFare: " + current.basicFare.toString()));
+    public void visitBasicFareLeaf(FareTree.BasicFareLeaf node) {
+        fare = node.basicFare.getFare();
+        lines = List.of(Tuple.of(depth, "BasicFare: " + node.basicFare.toString()));
     }
 
     @Override
-    public void visitSuperExpressSurchargeLeaf(FareTree.SuperExpressSurchargeLeaf current) {
-        fare = current.superExpressSurcharge.getFare();
-        lines = List.of(Tuple.of(currentDepth, "SuperExpressSurcharge: " + current.superExpressSurcharge.toString()));
+    public void visitSuperExpressSurchargeLeaf(FareTree.SuperExpressSurchargeLeaf node) {
+        fare = node.superExpressSurcharge.getFare();
+        lines = List.of(Tuple.of(depth, "SuperExpressSurcharge: " + node.superExpressSurcharge.toString()));
     }
 
     @Override
-    public void visitPlusNode(FareTree.PlusNode current) {
+    public void visitPlusNode(FareTree.PlusNode node) {
         DetailVisitor visitor1 = zero();
         DetailVisitor visitor2 = zero();
-        visitor1.currentDepth = currentDepth + 1;
-        visitor2.currentDepth = currentDepth + 1;
+        visitor1.depth = depth + 1;
+        visitor2.depth = depth + 1;
 
-        current.ft1.accept(visitor1);
-        current.ft2.accept(visitor2);
+        node.subTree1.accept(visitor1);
+        node.subTree2.accept(visitor2);
         var fare1 = visitor1.fare;
         var fare2 = visitor2.fare;
         var lines1 = visitor1.lines;
@@ -68,19 +68,19 @@ class DetailVisitor implements FareTree.FareTreeVisitor {
 
         fare = fare1._plus_(fare2);
         lines = sum(
-                List.of(Tuple.of(currentDepth, "plus: " + fare.show())),
+                List.of(Tuple.of(depth, "plus: " + fare.show())),
                 sum(lines1, lines2)
         );
     }
 
     @Override
-    public void visitSumNode(FareTree.SumNode current) {
+    public void visitSumNode(FareTree.SumNode node) {
         List<Fare> results = new ArrayList<>();
         List<List<Tuple2<Integer, String>>> lss = new ArrayList<>();
 
-        for (FareTree ft : current.fts) {
+        for (FareTree ft : node.subTrees) {
             DetailVisitor visitor = zero();
-            visitor.currentDepth = currentDepth + 1;
+            visitor.depth = depth + 1;
 
             ft.accept(visitor);
             results.add(visitor.fare);
@@ -90,34 +90,34 @@ class DetailVisitor implements FareTree.FareTreeVisitor {
         fare = results.stream()
                 .reduce(Fare.from(0), Fare::_plus_);
         lines = sum(
-                List.of(Tuple.of(currentDepth, String.format("sum(%d): %s", lss.size(), fare.show()))),
+                List.of(Tuple.of(depth, String.format("sum(%d): %s", lss.size(), fare.show()))),
                 lss.stream().reduce(List.of(), DetailVisitor::sum)
         );
     }
 
     @Override
-    public void visitDiscountNode(FareTree.DiscountNode current) {
+    public void visitDiscountNode(FareTree.DiscountNode node) {
         DetailVisitor visitor = zero();
-        visitor.currentDepth = currentDepth + 1;
+        visitor.depth = depth + 1;
 
-        current.ft.accept(visitor);
+        node.subTree.accept(visitor);
 
-        fare = current.discount.apply(visitor.fare);
+        fare = node.discount.apply(visitor.fare);
         lines = sum(
-                List.of(Tuple.of(currentDepth, String.format("Discount(%s): %s", current.discount.getClass().getSimpleName(), fare.show()))),
+                List.of(Tuple.of(depth, String.format("Discount(%s): %s", node.discount.getClass().getSimpleName(), fare.show()))),
                 visitor.lines
         );
     }
 
     @Override
-    public void visitOneChildNode(FareTree.OneChildNode current) {
+    public void visitOneChildNode(FareTree.OneChildNode node) {
         DetailVisitor visitor1 = zero();
         DetailVisitor visitor2 = zero();
-        visitor1.currentDepth = currentDepth + 1;
-        visitor2.currentDepth = currentDepth + 1;
+        visitor1.depth = depth + 1;
+        visitor2.depth = depth + 1;
 
-        current.basicFare.accept(visitor1);
-        current.superExpressSurcharge.accept(visitor2);
+        node.basicFare.accept(visitor1);
+        node.superExpressSurcharge.accept(visitor2);
         var fare1 = visitor1.fare;
         var fare2 = visitor2.fare;
         var lines1 = visitor1.lines;
@@ -125,7 +125,7 @@ class DetailVisitor implements FareTree.FareTreeVisitor {
 
         fare = ChildDiscount.computeTotalFareForChild(fare1, fare2);
         lines = sum(
-                List.of(Tuple.of(currentDepth, "oneChild: " + fare.show())),
+                List.of(Tuple.of(depth, "oneChild: " + fare.show())),
                 sum(lines1, lines2)
         );
     }

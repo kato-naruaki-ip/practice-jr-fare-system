@@ -12,19 +12,19 @@ public abstract class FareTree {
     abstract public void accept(FareTreeVisitor visitor);
 
     public interface FareTreeVisitor {
-        void visitFareLeaf(FareLeaf current);
+        void visitFareLeaf(FareLeaf node);
 
-        void visitBasicFareLeaf(BasicFareLeaf current);
+        void visitBasicFareLeaf(BasicFareLeaf node);
 
-        void visitSuperExpressSurchargeLeaf(SuperExpressSurchargeLeaf current);
+        void visitSuperExpressSurchargeLeaf(SuperExpressSurchargeLeaf node);
 
-        void visitPlusNode(PlusNode current);
+        void visitPlusNode(PlusNode node);
 
-        void visitSumNode(SumNode current);
+        void visitSumNode(SumNode node);
 
-        void visitDiscountNode(DiscountNode current);
+        void visitDiscountNode(DiscountNode node);
 
-        void visitOneChildNode(OneChildNode current);
+        void visitOneChildNode(OneChildNode node);
     }
 
     @AllArgsConstructor
@@ -59,8 +59,8 @@ public abstract class FareTree {
 
     @AllArgsConstructor
     public static class PlusNode extends FareTree {
-        final FareTree ft1;
-        final FareTree ft2;
+        final FareTree subTree1;
+        final FareTree subTree2;
 
         @Override
         public void accept(FareTreeVisitor visitor) {
@@ -70,7 +70,7 @@ public abstract class FareTree {
 
     @AllArgsConstructor
     public static class SumNode extends FareTree {
-        final List<FareTree> fts;
+        final List<FareTree> subTrees;
 
         @Override
         public void accept(FareTreeVisitor visitor) {
@@ -80,7 +80,7 @@ public abstract class FareTree {
 
     @AllArgsConstructor
     public static class DiscountNode extends FareTree {
-        final FareTree ft;
+        final FareTree subTree;
         final Discount discount;
 
         @Override

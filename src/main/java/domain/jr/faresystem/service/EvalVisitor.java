@@ -26,27 +26,27 @@ class EvalVisitor implements FareTree.FareTreeVisitor {
     }
 
     @Override
-    public void visitFareLeaf(FareTree.FareLeaf current) {
-        fare = current.fare;
+    public void visitFareLeaf(FareTree.FareLeaf node) {
+        fare = node.fare;
     }
 
     @Override
-    public void visitBasicFareLeaf(FareTree.BasicFareLeaf current) {
-        fare = current.basicFare.getFare();
+    public void visitBasicFareLeaf(FareTree.BasicFareLeaf node) {
+        fare = node.basicFare.getFare();
     }
 
     @Override
-    public void visitSuperExpressSurchargeLeaf(FareTree.SuperExpressSurchargeLeaf current) {
-        fare = current.superExpressSurcharge.getFare();
+    public void visitSuperExpressSurchargeLeaf(FareTree.SuperExpressSurchargeLeaf node) {
+        fare = node.superExpressSurcharge.getFare();
     }
 
     @Override
-    public void visitPlusNode(FareTree.PlusNode current) {
+    public void visitPlusNode(FareTree.PlusNode node) {
         EvalVisitor visitor1 = zero();
         EvalVisitor visitor2 = zero();
 
-        current.ft1.accept(visitor1);
-        current.ft1.accept(visitor2);
+        node.subTree1.accept(visitor1);
+        node.subTree1.accept(visitor2);
 
         Fare fare1 = visitor1.fare;
         Fare fare2 = visitor2.fare;
@@ -55,10 +55,10 @@ class EvalVisitor implements FareTree.FareTreeVisitor {
     }
 
     @Override
-    public void visitSumNode(FareTree.SumNode current) {
+    public void visitSumNode(FareTree.SumNode node) {
         Fare result = Fare.from(0);
 
-        for (FareTree ft : current.fts) {
+        for (FareTree ft : node.subTrees) {
             EvalVisitor visitor = zero();
 
             ft.accept(visitor);
@@ -69,21 +69,21 @@ class EvalVisitor implements FareTree.FareTreeVisitor {
     }
 
     @Override
-    public void visitDiscountNode(FareTree.DiscountNode current) {
+    public void visitDiscountNode(FareTree.DiscountNode node) {
         EvalVisitor visitor = zero();
 
-        current.ft.accept(visitor);
+        node.subTree.accept(visitor);
 
-        fare = current.discount.apply(visitor.fare);
+        fare = node.discount.apply(visitor.fare);
     }
 
     @Override
-    public void visitOneChildNode(FareTree.OneChildNode current) {
+    public void visitOneChildNode(FareTree.OneChildNode node) {
         EvalVisitor visitorB = zero();
         EvalVisitor visitorS = zero();
 
-        current.basicFare.accept(visitorB);
-        current.superExpressSurcharge.accept(visitorS);
+        node.basicFare.accept(visitorB);
+        node.superExpressSurcharge.accept(visitorS);
 
         fare = ChildDiscount.computeTotalFareForChild(visitorB.fare, visitorS.fare);
     }
