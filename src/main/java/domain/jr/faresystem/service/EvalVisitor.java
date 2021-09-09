@@ -46,7 +46,7 @@ class EvalVisitor implements FareTree.FareTreeVisitor {
         EvalVisitor visitor2 = zero();
 
         node.subTree1.accept(visitor1);
-        node.subTree1.accept(visitor2);
+        node.subTree2.accept(visitor2);
 
         Fare fare1 = visitor1.fare;
         Fare fare2 = visitor2.fare;
