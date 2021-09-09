@@ -41,9 +41,11 @@ public final class FareComputation {
     }
 
     public Fare totalFare() {
-        System.out.println(AccountVisitor.convertToString(totalFareTree()));
-
         return EvalVisitor.evaluate(totalFareTree());
+    }
+
+    public String account() {
+        return AccountVisitor.convertToString(totalFareTree());
     }
 
     FareTree totalFareTree() {
