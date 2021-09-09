@@ -1,28 +1,26 @@
 package domain.jr.faresystem.model.surcharge.superexpress;
 
 import domain.jr.externalsystems.station.Station;
+import domain.jr.externalsystems.superexpress.SuperExpress;
 import domain.jr.faresystem.model.fare.Fare;
-import lombok.*;
-import lombok.experimental.FieldDefaults;
+import lombok.NonNull;
+import lombok.Value;
 
-@ToString
-@EqualsAndHashCode
-@AllArgsConstructor
-@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
-public final class SuperExpressSurcharge {
+@Value
+public class SuperExpressSurcharge {
     @NonNull
-    @Getter
+    SuperExpress superExpress;
+
+    @NonNull
     Station departure;
 
     @NonNull
-    @Getter
     Station destination;
 
     @NonNull
-    @Getter
     Fare fare;
 
-    public String showFare() {
-        return "特急料金(" + fare.getYen().show() + ")";
+    public String show() {
+        return String.format("特急料金(%s):[%s]%s->%s", fare.getYen().show(), superExpress.show(), departure.show(), destination.show());
     }
 }

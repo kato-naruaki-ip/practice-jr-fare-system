@@ -13,7 +13,7 @@ import static domain.jr.faresystem.model.fare.FareService.multiplyRatio;
 @Value
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @SuppressWarnings("NonAsciiCharacters")
-public class RoundTripDiscount {
+public class RoundTripDiscount implements Discount {
     StationDistance distance;
     boolean is_往復;
 
