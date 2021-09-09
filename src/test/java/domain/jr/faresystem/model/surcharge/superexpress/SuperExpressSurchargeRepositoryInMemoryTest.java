@@ -50,12 +50,8 @@ class SuperExpressSurchargeRepositoryInMemoryTest {
         Optional<SuperExpressSurcharge> got;
         got = repository.getBetween(superExpress, departure, destination);
         assertEquals(isPresent, got.isPresent());
-        System.out.printf(
-                "%s:\t%s\t-> %s\t: %s\n",
-                superExpress.show(),
-                departure.show(),
-                destination.show(),
-                got.map(SuperExpressSurcharge::showFare).orElse("<Undefined>")
+        System.out.println(
+                got.map(SuperExpressSurcharge::show).orElse("<Undefined>")
         );
     }
 }
