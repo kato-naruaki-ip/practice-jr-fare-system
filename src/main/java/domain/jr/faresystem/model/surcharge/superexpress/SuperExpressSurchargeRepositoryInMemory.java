@@ -12,8 +12,8 @@ import java.util.Optional;
 @SuppressWarnings("NonAsciiCharacters")
 @Repository
 public final class SuperExpressSurchargeRepositoryInMemory implements SuperExpressSurchargeRepository {
-    private static final SuperExpress _ひかり = SuperExpressRepositoryInMemory.get_ひかり();
-    private static final SuperExpress _のぞみ = SuperExpressRepositoryInMemory.get_のぞみ();
+    public static final SuperExpress _ひかり = SuperExpressRepositoryInMemory.get_ひかり();
+    public static final SuperExpress _のぞみ = SuperExpressRepositoryInMemory.get_のぞみ();
 
     @Override
     public Optional<SuperExpressSurcharge> getBetween(SuperExpress superExpress, Station departure, Station destination) {
