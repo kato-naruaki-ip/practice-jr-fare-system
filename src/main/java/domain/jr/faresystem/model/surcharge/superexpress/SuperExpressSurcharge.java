@@ -20,6 +20,10 @@ public class SuperExpressSurcharge {
     @NonNull
     Fare fare;
 
+    public String show() {
+        return String.format("特急料金(%s):[%s]%s->%s", fare.getYen().show(), superExpress.show(), departure.show(), destination.show());
+    }
+
     public String showFare() {
         return "特急料金(" + fare.getYen().show() + ")";
     }
