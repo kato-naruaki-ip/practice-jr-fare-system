@@ -15,4 +15,8 @@ public class BasicFare {
 
     @NonNull
     Fare fare;
+
+    public String show() {
+        return String.format("運賃(%s):%s->%s", fare.getYen().show(), departure.show(), destination.show());
+    }
 }
