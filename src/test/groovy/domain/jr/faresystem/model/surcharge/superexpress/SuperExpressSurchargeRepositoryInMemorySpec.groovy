@@ -32,7 +32,7 @@ class SuperExpressSurchargeRepositoryInMemorySpec extends Specification {
             assert fare == null
         } else {
             assert got.get().getFare() == fare
-            println got.get().showFare()
+            println got.get().show()
         }
 
         where:
