@@ -94,7 +94,14 @@ class AccountVisitor implements FareTree.FareTreeVisitor {
         node.subTree.accept(visitor);
 
         lines = sum(
-                List.of(Tuple.of(depth, String.format("Discount(%s): %s", node.discount.getClass().getSimpleName(), EvalVisitor.evaluate(node).show()))),
+                List.of(Tuple.of(
+                        depth,
+                        String.format(
+                                "Discount(%s): %s",
+                                node.discount.getName() + ": " + node.discount.showDetail(),
+                                EvalVisitor.evaluate(node).show()
+                        )
+                )),
                 visitor.lines
         );
     }

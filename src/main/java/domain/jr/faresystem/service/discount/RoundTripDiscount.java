@@ -21,14 +21,31 @@ public class RoundTripDiscount implements Discount {
         return new RoundTripDiscount(stationDistance, is_往復);
     }
 
-    public Fare apply(Fare fare) {
-        if (
-                distance.getKiloMeter().isGreaterThanOrEqualTo(KiloMeter.from(601))
-                        && is_往復
-        ) {
-            return multiplyRatio(FareRatio.percent(90), fare);
-        }
+    @Override
+    public String getName() {
+        return "往復割引";
+    }
 
-        return fare;
+    @Override
+    public Fare apply(Fare fare) {
+        return multiplyRatio(FareRatio.percent(computeDiscountPercentage()), fare);
+    }
+
+    @Override
+    public String showDetail() {
+        return String.format("割引率(%d%%)", computeDiscountPercentage());
+    }
+
+    private boolean isApplied() {
+        return distance.getKiloMeter().isGreaterThanOrEqualTo(KiloMeter.from(601))
+                && is_往復;
+    }
+
+    private int computeDiscountPercentage() {
+        if (isApplied()) {
+            return 90;
+        } else {
+            return 0;
+        }
     }
 }

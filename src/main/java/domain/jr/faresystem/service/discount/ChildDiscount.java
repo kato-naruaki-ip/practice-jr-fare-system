@@ -10,7 +10,7 @@ import static domain.jr.faresystem.model.fare.FareService.halfOf;
 
 @Value
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
-public class ChildDiscount {
+public class ChildDiscount implements Discount {
     boolean isChild;
 
     public static ChildDiscount when(Client client) {
@@ -21,11 +21,22 @@ public class ChildDiscount {
         return halfOf(basicFare)._plus_(halfOf(superExpressSurchargeFare));
     }
 
+    @Override
+    public String getName() {
+        return "子供料金";
+    }
+
+    @Override
     public Fare apply(Fare fare) {
         if (isChild) {
             return halfOf(fare);
         } else {
             return fare;
         }
+    }
+
+    @Override
+    public String showDetail() {
+        return isChild ? "運賃と特急料金をそれどれ半額" : "適用なし";
     }
 }

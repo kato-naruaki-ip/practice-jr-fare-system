@@ -26,6 +26,12 @@ public class GroupDiscount implements Discount {
         return new GroupDiscount(groupSize, date, oneClient);
     }
 
+    @Override
+    public String getName() {
+        return "団体割引";
+    }
+
+    @Override
     public Fare apply(Fare fare) {
         Fare result = fare;
 
@@ -33,15 +39,19 @@ public class GroupDiscount implements Discount {
             result = result._minus_(oneClient);
         }
 
-        if (groupSize >= 8) {
-            if (isNearNewYearsDay(date)) {
-                result = FareService.discountByPercent(10, result);
-            } else {
-                result = FareService.discountByPercent(15, result);
-            }
-        }
+        result = FareService.discountByPercent(computeDiscountPercentage(), result);
 
         return result;
+    }
+
+    @Override
+    public String showDetail() {
+        return String.format(
+                "無料(%s × %d人), 割引率(%d%%)",
+                oneClient.getYen().show(),
+                computeNumOfFree(),
+                computeDiscountPercentage()
+        );
     }
 
     private int computeNumOfFree() {
@@ -60,6 +70,18 @@ public class GroupDiscount implements Discount {
         }
 
         throw new AssertionError();
+    }
+
+    private int computeDiscountPercentage() {
+        if (groupSize >= 8) {
+            if (isNearNewYearsDay(date)) {
+                return 10;
+            } else {
+                return 15;
+            }
+        } else {
+            return 0;
+        }
     }
 
     @SuppressWarnings("OctalInteger")
