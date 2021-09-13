@@ -11,6 +11,14 @@ import java.util.List;
 public abstract class FareTree {
     abstract public void accept(FareTreeVisitor visitor);
 
+    public Fare toTotalFare() {
+        return EvalVisitor.evaluate(this);
+    }
+
+    public String toAccountString() {
+        return AccountVisitor.convertToString(this);
+    }
+
     public interface FareTreeVisitor {
         void visitFareLeaf(FareLeaf node);
 
