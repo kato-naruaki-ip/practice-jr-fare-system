@@ -16,7 +16,7 @@ import spock.lang.Specification
 
 import java.time.LocalDate
 
-class FareComputationSpec extends Specification {
+class FareComputationInMemorySpec extends Specification {
 
     private final FareComputation.FareComputationRepositories repositories = new FareComputation.FareComputationRepositories(
             new BasicFareRepositoryInMemory(),
