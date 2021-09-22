@@ -7,8 +7,4 @@ import lombok.Value;
 class StationName {
     @NonNull
     String name;
-
-    public String show() {
-        return name + "駅";
-    }
 }
