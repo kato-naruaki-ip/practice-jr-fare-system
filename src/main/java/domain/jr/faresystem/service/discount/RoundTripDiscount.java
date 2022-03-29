@@ -33,7 +33,7 @@ public class RoundTripDiscount implements Discount {
 
     @Override
     public String showDetail() {
-        return String.format("割引率(%d%%)", computeDiscountPercentage());
+        return String.format("割引×(%d%%)", computeDiscountPercentage());
     }
 
     private boolean isApplied() {
@@ -45,7 +45,7 @@ public class RoundTripDiscount implements Discount {
         if (isApplied()) {
             return 90;
         } else {
-            return 0;
+            return 100;
         }
     }
 }
